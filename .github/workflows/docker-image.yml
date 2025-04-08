@@ -24,7 +24,7 @@ jobs:
 
     - name: Build and Tag Docker Image
       run: |
-        docker pull my-dockerhub-user/my-app:latest || true
+        docker build -t my-dockerhub-user/my-app:latest .
         docker build --cache-from=my-dockerhub-user/my-app:latest -t my-dockerhub-user/my-app:latest .
         docker tag my-dockerhub-user/my-app:latest my-dockerhub-user/my-app:${{ github.sha }}
 
@@ -32,3 +32,21 @@ jobs:
       run: |
         docker push my-dockerhub-user/my-app:latest
         docker push my-dockerhub-user/my-app:${{ github.sha }}
+
+  deploy:
+      needs: build
+      runs-on: ubuntu-latest
+  
+      steps:
+      - name: Deploy to AWS EC2 via SSH
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            docker pull ${{ secrets.DOCKER_USERNAME }}/my-app:latest
+            docker stop my-app || true
+            docker rm my-app || true
+            docker run -d --name my-app -p 80:80 ${{ secrets.DOCKER_USERNAME }}/my-app:latest
+
