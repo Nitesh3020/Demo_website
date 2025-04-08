@@ -24,14 +24,13 @@ jobs:
 
     - name: Build and Tag Docker Image
       run: |
-        docker build -t my-dockerhub-user/my-app:latest .
-        docker build --cache-from=my-dockerhub-user/my-app:latest -t my-dockerhub-user/my-app:latest .
-        docker tag my-dockerhub-user/my-app:latest my-dockerhub-user/my-app:${{ github.sha }}
+        docker build -t ${{ secrets.DOCKER_USERNAME }}/my-app:latest .
+        docker tag ${{ secrets.DOCKER_USERNAME }}/my-app:latest ${{ secrets.DOCKER_USERNAME }}/my-app:${{ github.sha }}
 
     - name: Push Docker Image to Docker Hub
       run: |
-        docker push my-dockerhub-user/my-app:latest
-        docker push my-dockerhub-user/my-app:${{ github.sha }}
+        docker push ${{ secrets.DOCKER_USERNAME }}/my-app:latest
+        docker push ${{ secrets.DOCKER_USERNAME }}/my-app:${{ github.sha }} 
 
   deploy:
       needs: build
