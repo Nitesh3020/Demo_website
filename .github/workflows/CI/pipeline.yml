@@ -1,0 +1,46 @@
+name: CI/CD Pipeline for my-app on EC2 Ubuntu Server
+
+on:
+  push:
+    branches:
+      - main  # Triggered when pushing to 'main' branch
+
+jobs:
+  build:
+    runs-on: ubuntu-latest  # GitHub-hosted runner
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and Push Docker image
+        run: |
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/my-app:latest .
+          docker push ${{ secrets.DOCKER_USERNAME }}/my-app:latest
+
+  deploy:
+    needs: build  # This will run after 'build' job finishes
+    runs-on: [self-hosted]  # Your EC2 runner
+    if: github.ref == 'refs/heads/main'  # Only deploy on 'main' branch
+
+    steps:
+      - name: Remove Old Container (if exists)
+        run: |
+          echo "${{ secrets.SUDO_PASSWORD }}" | sudo -S docker rm -f my-app || true
+
+      - name: Pull Latest Docker Image
+        run: |
+          echo "${{ secrets.SUDO_PASSWORD }}" | sudo -S docker pull ${{ secrets.DOCKER_USERNAME }}/my-app:latest
+
+      - name: Run New Docker Container
+        run: |
+          echo "${{ secrets.SUDO_PASSWORD }}" | sudo -S docker run -d --restart always --name my-app -p 8080:80 ${{ secrets.DOCKER_USERNAME }}/my-app:latest
