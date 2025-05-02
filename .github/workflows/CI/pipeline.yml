@@ -37,9 +37,14 @@ jobs:
         run: |
           echo "${{ secrets.SUDO_PASSWORD }}" | sudo -S docker rm -f my-app || true
 
-      - name: Pull Latest Docker Image
+      - name: Check if Image Exists Locally
         run: |
-          echo "${{ secrets.SUDO_PASSWORD }}" | sudo -S docker pull ${{ secrets.DOCKER_USERNAME }}/my-app:latest
+          if ! docker image inspect ${{ secrets.DOCKER_USERNAME }}/my-app:latest > /dev/null 2>&1; then
+            echo "Image not found locally, pulling from registry..."
+            echo "${{ secrets.SUDO_PASSWORD }}" | sudo -S docker pull ${{ secrets.DOCKER_USERNAME }}/my-app:latest
+          else
+            echo "Image found locally, skipping pull."
+          fi
 
       - name: Run New Docker Container
         run: |
