@@ -24,8 +24,8 @@ jobs:
 
       - name: Build and Push Docker image
         run: |
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/my-html:latest .
-          docker push ${{ secrets.DOCKER_USERNAME }}/my-html:latest
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/my-app:latest .
+          docker push ${{ secrets.DOCKER_USERNAME }}/my-app:latest
 
   deploy:
     needs: build  # This will run after 'build' job finishes
@@ -41,11 +41,11 @@ jobs:
         run: |
           if ! docker image inspect ${{ secrets.DOCKER_USERNAME }}/my-app:latest > /dev/null 2>&1; then
             echo "Image not found locally, pulling from registry..."
-            echo "${{ secrets.SUDO_PASSWORD }}" | sudo -S docker pull ${{ secrets.DOCKER_USERNAME }}/my-html:latest
+            echo "${{ secrets.SUDO_PASSWORD }}" | sudo -S docker pull ${{ secrets.DOCKER_USERNAME }}/my-app:latest
           else
             echo "Image found locally, skipping pull."
           fi
 
       - name: Run New Docker Container
         run: |
-          echo "${{ secrets.SUDO_PASSWORD }}" | sudo -S docker run -d --restart always --name my-app -p 8080:80 ${{ secrets.DOCKER_USERNAME }}/my-html:latest
+          echo "${{ secrets.SUDO_PASSWORD }}" | sudo -S docker run -d --restart always --name my-app -p 8080:80 ${{ secrets.DOCKER_USERNAME }}/my-app:latest
