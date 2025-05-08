@@ -25,12 +25,13 @@ jobs:
       - name: Validate assets/img/ exists and contains product images
         run: |
           echo "Checking assets/img/ directory..."
+          echo "Current directory: $(pwd)"
           if [ ! -d "assets/img" ]; then
             echo "❌ Directory 'assets/img' does not exist."
             exit 1
           fi
           if ! ls assets/img/product*.jpg 1>/dev/null 2>&1; then
-            echo "❌ No product images found in 'assets/img/'."
+            echo "❌ No product images found in 'assets/img/'." 
             exit 1
           fi
           echo "✅ assets/img/ and product images found."
