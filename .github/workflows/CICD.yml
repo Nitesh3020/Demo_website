@@ -22,19 +22,19 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Validate assets/img/ exists and contains product images
+      - name: Validate asserts/img/ exists and contains product images
         run: |
-          echo "Checking assets/img/ directory..."
+          echo "Checking asserts/img/ directory..."
           echo "Current directory: $(pwd)"
-          if [ ! -d "assets/img" ]; then
-            echo "❌ Directory 'assets/img' does not exist."
+          if [ ! -d "asserts/img" ]; then
+            echo "❌ Directory 'asserts/img' does not exist."
             exit 1
           fi
-          if ! ls assets/img/product*.jpg 1>/dev/null 2>&1; then
-            echo "❌ No product images found in 'assets/img/'." 
+          if ! ls asserts/img/product*.jpg 1>/dev/null 2>&1; then
+            echo "❌ No product images found in 'asserts/img/'." 
             exit 1
           fi
-          echo "✅ assets/img/ and product images found."
+          echo "✅ asserts/img/ and product images found."
 
       - name: Build and Push Docker image
         run: |
