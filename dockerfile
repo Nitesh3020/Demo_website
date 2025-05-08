@@ -7,7 +7,7 @@ COPY index.html /usr/share/nginx/html/
 COPY style.css /usr/share/nginx/html/
 
 # Copy all product images
-COPY assets/img/ /usr/share/nginx/html/
+COPY asserts/img/ /usr/share/nginx/html/
 
 EXPOSE 80
 
