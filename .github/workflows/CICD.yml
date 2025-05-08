@@ -6,7 +6,7 @@ on:
       - main  # Triggered when pushing to 'main' branch
 
 jobs:
-  build:
+    build:
     runs-on: ubuntu-latest  # GitHub-hosted runner
 
     steps:
@@ -22,30 +22,43 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
+      - name: Validate assets/img/ exists and contains product images
+        run: |
+          echo "Checking assets/img/ directory..."
+          if [ ! -d "assets/img" ]; then
+            echo "❌ Directory 'assets/img' does not exist."
+            exit 1
+          fi
+          if ! ls assets/img/product*.jpg 1>/dev/null 2>&1; then
+            echo "❌ No product images found in 'assets/img/'."
+            exit 1
+          fi
+          echo "✅ assets/img/ and product images found."
+
       - name: Build and Push Docker image
         run: |
           docker build -t ${{ secrets.DOCKER_USERNAME }}/my-app:latest .
           docker push ${{ secrets.DOCKER_USERNAME }}/my-app:latest
 
-  deploy:
-    needs: build  # This will run after 'build' job finishes
-    runs-on: [self-hosted]  # Your EC2 runner
-    if: github.ref == 'refs/heads/main'  # Only deploy on 'main' branch
+    deploy:
+      needs: build  # This will run after 'build' job finishes
+      runs-on: [self-hosted]  # Your EC2 runner
+      if: github.ref == 'refs/heads/main'  # Only deploy on 'main' branch
 
-    steps:
-      - name: Remove Old Container (if exists)
-        run: |
-          echo "${{ secrets.SUDO_PASSWORD }}" | sudo -S docker rm -f my-app || true
+      steps:
+        - name: Remove Old Container (if exists)
+          run: |
+            echo "${{ secrets.SUDO_PASSWORD }}" | sudo -S docker rm -f my-app || true
 
-      - name: Check if Image Exists Locally
-        run: |
-          if ! docker image inspect ${{ secrets.DOCKER_USERNAME }}/my-app:latest > /dev/null 2>&1; then
-            echo "Image not found locally, pulling from registry..."
-            echo "${{ secrets.SUDO_PASSWORD }}" | sudo -S docker pull ${{ secrets.DOCKER_USERNAME }}/my-app:latest
-          else
-            echo "Image found locally, skipping pull."
-          fi
+        - name: Check if Image Exists Locally
+          run: |
+            if ! docker image inspect ${{ secrets.DOCKER_USERNAME }}/my-app:latest > /dev/null 2>&1; then
+              echo "Image not found locally, pulling from registry..."
+              echo "${{ secrets.SUDO_PASSWORD }}" | sudo -S docker pull ${{ secrets.DOCKER_USERNAME }}/my-app:latest
+            else
+              echo "Image found locally, skipping pull."
+            fi
 
-      - name: Run New Docker Container
-        run: |
-          echo "${{ secrets.SUDO_PASSWORD }}" | sudo -S docker run -d --restart always --name my-app -p 8080:80 ${{ secrets.DOCKER_USERNAME }}/my-app:latest
+        - name: Run New Docker Container
+          run: |
+            echo "${{ secrets.SUDO_PASSWORD }}" | sudo -S docker run -d --restart always --name my-app -p 8080:80 ${{ secrets.DOCKER_USERNAME }}/my-app:latest
