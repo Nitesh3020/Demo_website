@@ -8,7 +8,7 @@ COPY index.html .
 COPY style.css .
 
 # Copy image assets (folder renamed from "asserts" to "assets")
-COPY assets/ ./assets/
+COPY asserts/ ./asserts/
 
 # Expose HTTP port
 EXPOSE 80
