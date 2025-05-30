@@ -1,18 +1,16 @@
 FROM nginx:alpine
 
-# Set working directory for clarity (optional but good practice)
+# Set working directory for NGINX default content
 WORKDIR /usr/share/nginx/html
 
-# Copy HTML and CSS files
+# Copy HTML and CSS
 COPY index.html .
 COPY style.css .
 
-# Copy full assets folder (fix spelling if needed)
-COPY asserts/ asserts/
+# Copy image assets (folder renamed from "asserts" to "assets")
+COPY assets/ ./assets/
 
-# Expose port 80
+# Expose HTTP port
 EXPOSE 80
 
-# Run NGINX in the foreground
 CMD ["nginx", "-g", "daemon off;"]
-    
